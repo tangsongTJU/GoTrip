@@ -1,0 +1,164 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>中国地图</title>
+</head>
+<style>
+  body {
+    margin: 0 auto;
+  }
+
+  .tooltip {
+    position: absolute;
+    width: 120px;
+    height: auto;
+    font-family: simsun;
+    font-size: 30px;
+    text-align: center;
+    color: white;
+    border-width: 2px;
+    background-color: black;
+    border-radius: 5px;
+  }
+
+  .tooltip:after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 20%;
+    margin-left: -8px;
+    width: 0;
+    height: 0;
+    border-bottom: 12px solid black;
+    border-right: 12px solid transparent;
+    border-left: 12px solid transparent;
+  }
+</style>
+<body style="width:500px; height:500px; overflow: hidden;">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+  var width = 500
+  var height = 500
+
+  var svg = d3.select('body').append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .append('g')
+    .attr('transform', 'translate(0,0)')
+
+  var projection = d3.geo.mercator()
+    .center([107, 31])
+    .scale(400)
+    .translate([width / 2, height / 2])
+
+  var path = d3.geo.path()
+    .projection(projection)
+
+  var color = d3.scale.category20()
+  // var mycolor = {
+  //   color0: "76,180,231",
+  //   color1:"255,192,159",
+  //   color2:"255,238,147",
+  // color3: "226,219,190",
+  // color4: "163,163,128"
+  // }
+  //
+  mycolor = ["d3.rgb(76,180,231)", "d3.rgb(255,192,159)", "d3.rgb(255,238,147)", "d3.rgb(226,219,190)", "d3.rgb(163,163,128)"]
+
+  d3.json('china.geojson', function (error, root) {
+
+    if (error) {
+      return console.error(error)
+    }
+    console.log(root.features)
+
+    svg.selectAll('path')
+      .data(root.features)
+      .enter()
+      .append('path')
+      .attr('stroke', '#000')
+      .attr('stroke-width', 1)
+      .attr('fill', function (d, i) {
+        // return color(i)
+        return d3.rgb(248, 248, 255)//
+        // if(i%5==0){
+        //
+        //   return d3.rgb(76,180,231)
+        // }else if (i%5==1){
+        //   return d3.rgb(76,180,231)
+        // }else if (i%5==2){
+        //   return d3.rgb(255,192,159)
+        // }else if(i%5==3){
+        //   return d3.rgb(255,238,147)
+        // }else if (i%5==4){
+        //   return d3.rgb(226,219,190)
+        // }else{
+        //   return d3.rgb(226,219,190)
+        // }
+
+      })
+      .attr('d', path)
+      .on('mouseover', function (d, i) {
+        d3.select(this)
+          .attr('fill', 'yellow')
+
+      })
+      .on('mouseout', function (d, i) {
+        d3.select(this)
+          .attr('fill', d3.rgb(248, 248, 255))//!!!
+      })
+      .on('click', function (d, i) {
+        console.log(d)
+        console.log(d.properties.name)
+        console.log(i)
+        if (window.localStorage) {
+          //存储变量的值
+          localStorage.cnamenum = i;
+          parent.location.href = '/#/backIndex/orderList';
+        } else {
+          alert("NOT SUPPORT");
+        }
+        d3.select(this)
+          .attr('fill', 'orange')
+        //window.location.href="http://www.hshsilver.com";
+      })
+
+      .on('mouseover', function (d, i) {
+        /*
+                鼠标移入时，
+                （1）通过 selection.html() 来更改提示框的文字
+                （2）通过更改样式 left 和 top 来设定提示框的位置
+                （3）设定提示框的透明度为1.0（完全不透明）
+                */
+        console.log(d.properties.name)
+        tooltip.html(d.properties.name)
+          .style('left', (d3.event.pageX) + 'px')
+          .style('top', (d3.event.pageY + 20) + 'px')
+          .style('opacity', 0.8)
+        // tooltip.style('box-shadow', '3px 3px 0px' + d3.rgb(144,144,144))
+        tooltip.style('background-color', d3.rgb(0, 0, 0))//在提示框后添加阴影
+        d3.select(this)
+          .attr('fill', d3.rgb(255, 192, 159))
+      })
+      .on('mousemove', function (d) {
+        /* 鼠标移动时，更改样式 left 和 top 来改变提示框的位置 */
+        tooltip.style('left', (d3.event.pageX) + 'px')
+          .style('top', (d3.event.pageY + 20) + 'px')
+      })
+      .on('mouseout', function (d, i) {
+        //鼠标移除 透明度设为0
+        tooltip.style('opacity', 0.0)
+        d3.select(this)
+          .attr('fill', d3.rgb(248, 248, 255))//!!!
+
+      })
+
+    var tooltip = d3.select('body')
+      .append('div')
+      .attr('class', 'tooltip')
+      .style('opacity', 0.0)
+  })
+
+</script>
+</body>
+</html>
